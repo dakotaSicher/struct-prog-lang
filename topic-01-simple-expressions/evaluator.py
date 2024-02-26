@@ -7,6 +7,11 @@ def evaluate(ast):
         ], f"unexpected ast numeric value {ast['value']} type is a {type(ast['value'])}."
         return ast["value"]
 
+    # check for unary - operator
+    # then evalutes right side and returns the negative of that value
+    if ast["tag"] == "-" and ast["left"] == None:
+        return -evaluate(ast["right"])
+
     # Recursive cases: evaluate the left and right sub-trees and apply the operation
     left_value = evaluate(ast["left"])
     right_value = evaluate(ast["right"])
@@ -87,6 +92,11 @@ def test_evaluate_division_by_zero():
     except Exception as e:
         assert str(e) == "Division by zero"
 
+def test_evaluate_unary_neg():
+    print("testing unary neg.")
+    equals("1+-2", -1)
+    equals("5+ -(2+1)", 2)
+
 
 if __name__ == "__main__":
     print("testing evaluator.")
@@ -95,4 +105,5 @@ if __name__ == "__main__":
     test_evaluate_subtraction()
     test_evaluate_division()
     test_evaluate_division_by_zero()
+    test_evaluate_unary_neg()
     print("done.")

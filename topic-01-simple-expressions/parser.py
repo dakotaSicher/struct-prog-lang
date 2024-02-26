@@ -1,7 +1,7 @@
 """
 expression = term { ("+" | "-") term }
 term = factor { ("*" | "/") factor }
-factor = number | "(" expression ")"
+factor = {"-"} (number | "(" expression ")" )
 number = <number>
 """
 
@@ -31,8 +31,11 @@ def parse_term(tokens):
 def parse_factor(tokens):
     token = tokens[0]
     tag = token["tag"]
+    if tag == "-":
+        node, tokens = parse_expression(tokens[1:])
+        return create_node("-", value=None, left=None, right = node ), tokens
     if tag == "number":
-        return create_node("number", value=token["value"]), tokens[1:]
+        return create_node("number", value=token["value"]), tokens[1:] 
     if tag == "(":
         node, tokens = parse_expression(tokens[1:])
         if tokens and tokens[0]["tag"] != ")":
@@ -125,10 +128,45 @@ def test_format_ast():
     result = format(ast)
     assert result == "-\n    4\n    /\n        2\n        1"
 
+def test_unary_negation():
+    print("test uniary negation parsing...")
+    tokens = tokenize("1+-2")
+    ast = parse(tokens)
+    assert ast == {
+        "tag": "+",
+        "value": None,
+        "left": {"tag": "number", "value": 1, "left": None, "right": None},
+        "right": {
+            "tag": "-",
+            "value": None,
+            "left": None,
+            "right": {"tag":"number", "value": 2,"left": None, "right": None}
+        },
+    }
+
+    tokens = tokenize("5+-(2+1)")
+    ast = parse(tokens)
+    assert ast == {
+        "tag": "+",
+        "value": None,
+        "left": {"tag": "number", "value": 5, "left": None, "right": None},
+        "right": {
+            "tag": "-",
+            "value": None,
+            "left": None,
+            "right": {
+                "tag": "+",
+                "value": None,
+                "left":  {"tag":"number", "value": 2,"left": None, "right": None},
+                "right": {"tag":"number", "value": 1,"left": None, "right": None}
+            }
+        },
+    }
 
 if __name__ == "__main__":
     test_simple_addition_parsing()
     test_nested_expressions_parsing()
     test_operation_precedence_parsing()
     test_format_ast()
+    test_unary_negation()
     print("done.")
