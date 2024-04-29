@@ -52,6 +52,11 @@ def evaluate_expression(ast, environment):
         return left_value / right_value, environment
     elif ast["tag"] == "*":
         return left_value * right_value, environment
+    elif ast["tag"] == "%":
+        # Add error handling for division by zero
+        if right_value == 0:
+            raise Exception("Division by zero")
+        return left_value % right_value, environment
     elif ast["tag"] == "<":
         return int(left_value < right_value), environment
     elif ast["tag"] == ">":
@@ -126,7 +131,7 @@ def equals(code, environment, expected_result, expected_environment=None):
     result, environment = evaluate(parse(tokenize(code)), environment)
     assert (
         result == expected_result
-    ), f"ERROR: When executing {[code]}, expected\n {[expected_result]},\n got \numeric{[result]}."
+    ), f"ERROR: When executing {[code]}, expected\n {[expected_result]},\n got numeric{[result]}."
     if expected_environment:
         assert (
             environment == expected_environment
@@ -134,7 +139,7 @@ def equals(code, environment, expected_result, expected_environment=None):
         ERROR: When executing 
         {[code]}, 
         expected
-        {[expected_environment]},\n got \n{[environment]}."
+        {[expected_environment]},\n got \n{[environment]}."""
 
 
 def test_evaluate_single_value():
@@ -173,6 +178,10 @@ def test_evaluate_subtraction():
 def test_evaluate_division():
     print("test evaluate division.")
     equals("15/5", {}, 3)
+
+def test_evaluate_modulus():
+    print("test evaluate modulus.")
+    equals("10%3", {}, 1)
 
 
 def test_evaluate_unary_operators():
@@ -346,6 +355,7 @@ if __name__ == "__main__":
     # test_evaluate_complex_expression()
     # test_evaluate_subtraction()
     # test_evaluate_division()
+    test_evaluate_modulus()
     # test_evaluate_division_by_zero()
     # test_evaluate_unary_operators()
     # test_evaluate_relational_operators()
@@ -355,5 +365,5 @@ if __name__ == "__main__":
     # test_evaluate_block_statement()
     # test_evaluate_function_expression()
     # test_evaluate_function_statement()
-    test_evaluate_function_call()
+    #test_evaluate_function_call()
     print("done.")
